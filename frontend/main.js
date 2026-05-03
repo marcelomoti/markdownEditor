@@ -37,12 +37,24 @@ function syncCodeEditor() {
   }
 }
 
+///function updateSplitLayout() {
+ // if (!codeVisible) return;
+ // const left = Math.max(20, Math.min(80, splitRatio * 100));
+ // editorPanelEl.style.flexBasis = `${left}%`;
+ // codePanelEl.style.flexBasis = `${100 - left}%`;
+ // splitterEl.style.left = `${left}%`;
+//}
+
+
+
 function updateSplitLayout() {
   if (!codeVisible) return;
   const left = Math.max(20, Math.min(80, splitRatio * 100));
-  editorPanelEl.style.flexBasis = `${left}%`;
-  codePanelEl.style.flexBasis = `${100 - left}%`;
-  splitterEl.style.left = `${left}%`;
+  
+  // Força o cálculo de tamanho com flex inline
+  editorPanelEl.style.flex = '0 0 ${left}%';
+  codePanelEl.style.flex = '0 0 ${100 - left}%';
+  splitterEl.style.left = '${left}%';
 }
 
 function toggleCodeVisibility() {
@@ -103,7 +115,17 @@ async function openFile() {
     const result = await openMethod();
     if (!result || result.error) return setStatus(`Erro: ${result?.error}`, true);
     currentPath = result.path; currentMarkdown = result.content;
-    setFilePath(currentPath); await reloadEditor(currentMarkdown); markDirty(false);
+    setFilePath(currentPath); 
+    await reloadEditor(currentMarkdown); 
+    
+    // Garante que o painel de código não suma
+    if (codeVisible) {
+        codePanelEl.classList.remove('hidden');
+        splitterEl.classList.remove('hidden');
+        updateSplitLayout(); // força o cálculo
+    }
+
+    markDirty(false);
   } catch (e) { setStatus(e.message, true); }
 }
 
