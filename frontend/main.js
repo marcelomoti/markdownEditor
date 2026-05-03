@@ -37,16 +37,16 @@ function syncCodeEditor() {
   }
 }
 
-///function updateSplitLayout() {
- // if (!codeVisible) return;
- // const left = Math.max(20, Math.min(80, splitRatio * 100));
- // editorPanelEl.style.flexBasis = `${left}%`;
- // codePanelEl.style.flexBasis = `${100 - left}%`;
- // splitterEl.style.left = `${left}%`;
-//}
+function updateSplitLayout() {
+  if (!codeVisible) return;
+  const left = Math.max(20, Math.min(80, splitRatio * 100));
+  editorPanelEl.style.flexBasis = `${left}%`;
+  codePanelEl.style.flexBasis = `${100 - left}%`;
+  splitterEl.style.left = `${left}%`;
+}
 
 
-
+/*
 function updateSplitLayout() {
   if (!codeVisible) return;
   const left = Math.max(20, Math.min(80, splitRatio * 100));
@@ -56,6 +56,7 @@ function updateSplitLayout() {
   codePanelEl.style.flex = '0 0 ${100 - left}%';
   splitterEl.style.left = '${left}%';
 }
+  */
 
 function toggleCodeVisibility() {
   codeVisible = !codeVisible;
