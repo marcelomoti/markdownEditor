@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Visual Editor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="title-wrap">
+          <h1>Markdown Visual Editor</h1>
+          <p>Editor Visual WYSIWYG + Código Markdown em tempo real</p>
+        </div>
+        <div class="actions">
+          <button id="toggle-code" class="btn btn-secondary" type="button">Ocultar código</button>
+          <button id="open-file" class="btn btn-secondary" type="button">Abrir</button>
+          <button id="save-file" class="btn btn-primary" type="button">Salvar</button>
+        </div>
+      </header>
+
+      <main id="workspace" class="workspace workspace-split">
+        <section id="editor-panel" class="panel editor-panel">
+          <div class="panel-head"><span>Editor Visual (WYSIWYG)</span><span id="mode-badge" class="mode-badge">Milkdown</span></div>
+          <div id="editor-error" class="editor-error hidden"></div>
+          <div id="editor-root" class="editor-root"></div>
+          <textarea id="fallback-editor" class="fallback-editor hidden" spellcheck="false" placeholder="Fallback simples..."></textarea>
+        </section>
+
+        <div id="splitter" class="splitter" title="Arraste para redimensionar"></div>
+
+        <section id="code-panel" class="panel code-panel">
+          <div class="panel-head"><span>Código Markdown Bruto</span></div>
+          <textarea id="code-editor" class="code-editor" spellcheck="false" placeholder="Markdown cru..."></textarea>
+        </section>
+      </main>
+
+      <footer class="statusbar">
+        <div id="file-path" class="file-path">Nenhum arquivo aberto.</div>
+        <div id="status" class="status">Editor pronto.</div>
+      </footer>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
