@@ -1,4 +1,7 @@
 from pathlib import Path
+import sys
+from urllib.parse import quote
+
 import webview
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -21,6 +24,17 @@ class Api:
             with open(path, 'r', encoding='utf-8') as f:
                 content = f.read()
             return {'path': path, 'content': content}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def open_path(self, path):
+        if not path:
+            return {'error': 'Nenhum caminho de arquivo informado.'}
+        try:
+            resolved = str(Path(path).resolve())
+            with open(resolved, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return {'path': resolved, 'content': content}
         except Exception as e:
             return {'error': str(e)}
 
@@ -52,10 +66,18 @@ def main():
     if not index_file.exists():
         raise FileNotFoundError(f'Arquivo nao encontrado: {index_file}')
 
+    file_arg = None
+    if len(sys.argv) > 1:
+        file_arg = str(Path(sys.argv[1]).resolve())
+
+    index_uri = index_file.as_uri()
+    if file_arg:
+        index_uri += '?file=' + quote(file_arg, safe='')
+
     api = Api()
     window = webview.create_window(
         'Markdown Visual Editor',
-        index_file.as_uri(),
+        index_uri,
         js_api=api,
         width=1280,
         height=900,
