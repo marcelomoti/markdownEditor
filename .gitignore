@@ -1,0 +1,5 @@
+# Ignore frontend dependencies and generated files
+frontend/node_modules/
+
+# Ignore runtime logs
+logs/

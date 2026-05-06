@@ -104,7 +104,14 @@ async function getApiMethod(name) {
 
 function getMarkdown() {
   if (useFallback) return fallbackEditorEl.value;
-  if (crepe && typeof crepe.getMarkdown === 'function') { try { return crepe.getMarkdown(); } catch (_) {} }
+  if (crepe && typeof crepe.getMarkdown === 'function') { 
+    try { 
+      let md = crepe.getMarkdown();
+      // Replace <br> tags with markdown line breaks
+      md = md.replace(/<br\s*\/?>/gi, '  \n');
+      return md;
+    } catch (_) {} 
+  }
   return currentMarkdown;
 }
 
@@ -112,7 +119,11 @@ async function mountCrepe(markdown) {
   editorRootEl.classList.remove('hidden'); fallbackEditorEl.classList.add('hidden'); editorRootEl.innerHTML = '';
   if (crepe) { try { crepe.destroy(); } catch (_) {} crepe = null; }
   const root = document.createElement('div'); root.className = 'crepe-host'; editorRootEl.appendChild(root);
-  crepe = new Crepe({ root, defaultValue: markdown });
+  crepe = new Crepe({ 
+    root, 
+    defaultValue: markdown,
+    features: ['paragraph', 'text', 'code', 'heading', 'list', 'blockquote', 'hr', 'image', 'link', 'hardbreak', 'gfm']
+  });
   await crepe.create();
   useFallback = false; currentMarkdown = markdown; modeBadgeEl.textContent = 'Milkdown';
   
