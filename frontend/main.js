@@ -140,7 +140,35 @@ async function reloadEditor(markdown) {
   syncCodeEditor();
 }
 
-window.addEventListener('load', forceLayout);
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const fileToOpen = params.get('file');
+
+  if (fileToOpen) {
+    try {
+      const openPath = await getApiMethod('open_path');
+      const result = await openPath(fileToOpen);
+      if (!result || result.error) {
+        throw new Error(result?.error || 'Erro ao abrir o arquivo.');
+      }
+      currentPath = result.path;
+      currentMarkdown = result.content;
+      setFilePath(currentPath);
+      await reloadEditor(currentMarkdown);
+      markDirty(false);
+      setStatus(`Arquivo aberto: ${currentPath}`);
+    } catch (e) {
+      setStatus(`Erro abrindo arquivo: ${e.message}`, true);
+      await reloadEditor(currentMarkdown);
+    }
+  } else {
+    await reloadEditor(currentMarkdown);
+  }
+
+  forceLayout();
+}
+
+window.addEventListener('load', init);
 async function openFile() {
   try {
     if (dirty && !confirm('Salvar alterações antes de abrir novo arquivo?')) return;
