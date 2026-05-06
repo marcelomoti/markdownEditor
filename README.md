@@ -27,6 +27,22 @@ npm install
 
 Isso baixa o `@milkdown/crepe`, que é a interface pronta do Milkdown para edição visual [web:71].
 
+## Scripts Windows
+
+Se você estiver no Windows, há atalhos em `.bat` para instalar, rodar e rebuildar o projeto:
+
+- `install_project_windows.bat`
+  - detecta Python e `npm`
+  - cria/atualiza `venv`
+  - instala dependências Python e frontend
+  - gera o `build` em `assets/milkdown-dist/`
+- `run_editor_windows.bat`
+  - ativa `venv`
+  - executa `app.py`
+  - requer o build já gerado
+- `frontend/build.bat`
+  - recompila o frontend com `npm run build`
+
 ## Como gerar o bundle local
 
 Dentro de `frontend/`:

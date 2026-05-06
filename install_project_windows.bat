@@ -7,7 +7,9 @@ set "PYEXE="
 set "PYVER="
 set "LOGDIR=%ROOT%logs"
 if not exist "%LOGDIR%" mkdir "%LOGDIR%"
-for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set "TS=%%I"
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value ^| find "="') do (
+  for /f "delims=." %%J in ("%%I") do set "TS=%%J"
+)
 set "LOG=%LOGDIR%\install-%TS%.log"
 
 >"%LOG%" (
@@ -116,17 +118,17 @@ echo [4/6] Verificando Node/npm...
 where npm >nul 2>nul
 if errorlevel 1 goto :missing_npm
 
+if exist "%ROOT%assets\milkdown-dist\index.html" (
+  echo [4/6] Frontend ja construido. Pulando npm install e build...
+  >>"%LOG%" echo [4/6] Frontend ja construido. Pulando npm install e build...
+  goto :done
+)
+
 echo [5/6] Instalando dependencias do frontend...
 >>"%LOG%" echo [5/6] Instalando dependencias do frontend...
 pushd "%ROOT%frontend"
 call npm install >>"%LOG%" 2>&1
 if errorlevel 1 ( popd & goto :npm_fail )
-
-rem echo [5/6]b Instalando dependencias markdown-it dompurify...
-rem >>"%LOG%" echo [5/6]b Instalando dependencias markdown-it dompurify...
-rem call npm install markdown-it dompurify >>"%LOG%" 2>&1
-rem if errorlevel 1 ( popd & goto :npm_fail )
-call npm install @milkdown/crepe markdown-it dompurify
 
 echo [6/6] Gerando bundle local do frontend...
 >>"%LOG%" echo [6/6] Gerando bundle local do frontend...
@@ -134,6 +136,7 @@ call npm run build >>"%LOG%" 2>&1
 if errorlevel 1 ( popd & goto :npm_fail )
 popd
 
+:done
 echo.
 echo [OK] Instalacao concluida com sucesso!
 echo [OK] Instalacao concluida com sucesso!>>"%LOG%"

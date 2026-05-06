@@ -3,7 +3,9 @@ setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
 if not exist "logs" mkdir "logs"
-for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set TS=%%I
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value ^| find "="') do (
+  for /f "delims=." %%J in ("%%I") do set TS=%%J
+)
 set "LOG=%~dp0logs\run-%TS%.log"
 set "ROOT=%~dp0"
 set "PYOK=0"

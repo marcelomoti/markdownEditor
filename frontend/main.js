@@ -37,25 +37,46 @@ function syncCodeEditor() {
   }
 }
 
-///function updateSplitLayout() {
- // if (!codeVisible) return;
- // const left = Math.max(20, Math.min(80, splitRatio * 100));
- // editorPanelEl.style.flexBasis = `${left}%`;
- // codePanelEl.style.flexBasis = `${100 - left}%`;
- // splitterEl.style.left = `${left}%`;
-//}
+// Adicione esta função ao main.js
+function forceLayout() {
+  if (!codeVisible) return;
+  editorPanelEl.style.flexBasis = '50%';
+  codePanelEl.style.flexBasis = '50%';
+  splitterEl.style.left = '50%';
+}
 
+/*
+function updateSplitLayout() {
+  if (!codeVisible) return;
+  const left = Math.max(20, Math.min(80, splitRatio * 100));
+  editorPanelEl.style.flexBasis = `${left}%`;
+  codePanelEl.style.flexBasis = `${100 - left}%`;
+  splitterEl.style.left = `${left}%`;
+}
+*/
+
+
+/*
+function updateSplitLayout() {
+  if (!codeVisible) return;
+  const left = Math.max(20, Math.min(80, splitRatio * 100));
+  editorPanelEl.style.flexBasis = '${left}%';
+  codePanelEl.style.flexBasis = '${100 - left}%';
+  splitterEl.style.left = '${left}%';
+}
+*/
 
 
 function updateSplitLayout() {
   if (!codeVisible) return;
   const left = Math.max(20, Math.min(80, splitRatio * 100));
   
-  // Força o cálculo de tamanho com flex inline
-  editorPanelEl.style.flex = '0 0 ${left}%';
-  codePanelEl.style.flex = '0 0 ${100 - left}%';
-  splitterEl.style.left = '${left}%';
+  editorPanelEl.style.flexBasis = `${left}%`;
+  codePanelEl.style.flexBasis = `${100 - left}%`;
+  splitterEl.style.left = `${left}%`;
 }
+
+
 
 function toggleCodeVisibility() {
   codeVisible = !codeVisible;
@@ -83,7 +104,14 @@ async function getApiMethod(name) {
 
 function getMarkdown() {
   if (useFallback) return fallbackEditorEl.value;
-  if (crepe && typeof crepe.getMarkdown === 'function') { try { return crepe.getMarkdown(); } catch (_) {} }
+  if (crepe && typeof crepe.getMarkdown === 'function') { 
+    try { 
+      let md = crepe.getMarkdown();
+      // Replace <br> tags with markdown line breaks
+      md = md.replace(/<br\s*\/?>/gi, '  \n');
+      return md;
+    } catch (_) {} 
+  }
   return currentMarkdown;
 }
 
@@ -91,7 +119,11 @@ async function mountCrepe(markdown) {
   editorRootEl.classList.remove('hidden'); fallbackEditorEl.classList.add('hidden'); editorRootEl.innerHTML = '';
   if (crepe) { try { crepe.destroy(); } catch (_) {} crepe = null; }
   const root = document.createElement('div'); root.className = 'crepe-host'; editorRootEl.appendChild(root);
-  crepe = new Crepe({ root, defaultValue: markdown });
+  crepe = new Crepe({ 
+    root, 
+    defaultValue: markdown,
+    features: ['paragraph', 'text', 'code', 'heading', 'list', 'blockquote', 'hr', 'image', 'link', 'hardbreak', 'gfm']
+  });
   await crepe.create();
   useFallback = false; currentMarkdown = markdown; modeBadgeEl.textContent = 'Milkdown';
   
@@ -108,6 +140,7 @@ async function reloadEditor(markdown) {
   syncCodeEditor();
 }
 
+window.addEventListener('load', forceLayout);
 async function openFile() {
   try {
     if (dirty && !confirm('Salvar alterações antes de abrir novo arquivo?')) return;
@@ -117,7 +150,7 @@ async function openFile() {
     currentPath = result.path; currentMarkdown = result.content;
     setFilePath(currentPath); 
     await reloadEditor(currentMarkdown); 
-    
+    forceLayout(); // Adicione aqui!
     // Garante que o painel de código não suma
     if (codeVisible) {
         codePanelEl.classList.remove('hidden');
@@ -155,4 +188,5 @@ splitterEl.addEventListener('mousedown', (e) => {
 
 openBtn.addEventListener('click', openFile); saveBtn.addEventListener('click', saveFile);
 toggleCodeBtn.addEventListener('click', toggleCodeVisibility);
-setFilePath(null); reloadEditor(currentMarkdown);
+setFilePath(null);
+reloadEditor(currentMarkdown).then(() => forceLayout());
