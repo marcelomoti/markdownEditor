@@ -37,6 +37,15 @@ function syncCodeEditor() {
   }
 }
 
+// Adicione esta função ao main.js
+function forceLayout() {
+  if (!codeVisible) return;
+  editorPanelEl.style.flexBasis = '50%';
+  codePanelEl.style.flexBasis = '50%';
+  splitterEl.style.left = '50%';
+}
+
+/*
 function updateSplitLayout() {
   if (!codeVisible) return;
   const left = Math.max(20, Math.min(80, splitRatio * 100));
@@ -44,19 +53,30 @@ function updateSplitLayout() {
   codePanelEl.style.flexBasis = `${100 - left}%`;
   splitterEl.style.left = `${left}%`;
 }
+*/
 
 
 /*
 function updateSplitLayout() {
   if (!codeVisible) return;
   const left = Math.max(20, Math.min(80, splitRatio * 100));
-  
-  // Força o cálculo de tamanho com flex inline
-  editorPanelEl.style.flex = '0 0 ${left}%';
-  codePanelEl.style.flex = '0 0 ${100 - left}%';
+  editorPanelEl.style.flexBasis = '${left}%';
+  codePanelEl.style.flexBasis = '${100 - left}%';
   splitterEl.style.left = '${left}%';
 }
-  */
+*/
+
+
+function updateSplitLayout() {
+  if (!codeVisible) return;
+  const left = Math.max(20, Math.min(80, splitRatio * 100));
+  
+  editorPanelEl.style.flexBasis = `${left}%`;
+  codePanelEl.style.flexBasis = `${100 - left}%`;
+  splitterEl.style.left = `${left}%`;
+}
+
+
 
 function toggleCodeVisibility() {
   codeVisible = !codeVisible;
@@ -109,6 +129,7 @@ async function reloadEditor(markdown) {
   syncCodeEditor();
 }
 
+window.addEventListener('load', forceLayout);
 async function openFile() {
   try {
     if (dirty && !confirm('Salvar alterações antes de abrir novo arquivo?')) return;
@@ -118,7 +139,7 @@ async function openFile() {
     currentPath = result.path; currentMarkdown = result.content;
     setFilePath(currentPath); 
     await reloadEditor(currentMarkdown); 
-    
+    forceLayout(); // Adicione aqui!
     // Garante que o painel de código não suma
     if (codeVisible) {
         codePanelEl.classList.remove('hidden');
@@ -156,4 +177,5 @@ splitterEl.addEventListener('mousedown', (e) => {
 
 openBtn.addEventListener('click', openFile); saveBtn.addEventListener('click', saveFile);
 toggleCodeBtn.addEventListener('click', toggleCodeVisibility);
-setFilePath(null); reloadEditor(currentMarkdown);
+setFilePath(null);
+reloadEditor(currentMarkdown).then(() => forceLayout());

@@ -7,7 +7,9 @@ set "PYEXE="
 set "PYVER="
 set "LOGDIR=%ROOT%logs"
 if not exist "%LOGDIR%" mkdir "%LOGDIR%"
-for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set "TS=%%I"
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value ^| find "="') do (
+  for /f "delims=." %%J in ("%%I") do set "TS=%%J"
+)
 set "LOG=%LOGDIR%\install-%TS%.log"
 
 >"%LOG%" (
