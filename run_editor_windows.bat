@@ -49,6 +49,10 @@ call "%ROOT%venv\Scripts\activate.bat"
 if !errorlevel! neq 0 goto :fail
 
 echo [2/3] Iniciando aplicativo desktop...  & echo [2/3] Iniciando app.py... >> "%LOG%"
+echo [DEBUG] Total de argumentos: %* >> "%LOG%"
+echo [DEBUG] Arg1: %1 >> "%LOG%"
+echo [DEBUG] Arg2: %2 >> "%LOG%"
+echo [DEBUG] Arg3: %3 >> "%LOG%"
 python "%ROOT%app.py" %* >> "%LOG%" 2>&1
 if !errorlevel! neq 0 goto :fail
 

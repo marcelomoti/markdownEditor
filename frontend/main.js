@@ -86,19 +86,36 @@ function toggleCodeVisibility() {
 }
 
 async function waitForBridge(timeoutMs = 10000) {
+  console.log('[BRIDGE] Aguardando ponte Python...');
   const start = Date.now();
   return new Promise((resolve, reject) => {
     const timer = setInterval(() => {
-      if (window.pywebview && window.pywebview.api) { clearInterval(timer); resolve(window.pywebview.api); return; }
-      if (Date.now() - start > timeoutMs) { clearInterval(timer); reject(new Error('API indisponível')); }
+      if (window.pywebview && window.pywebview.api) { 
+        console.log('[BRIDGE] Ponte Python disponível!');
+        clearInterval(timer); 
+        resolve(window.pywebview.api); 
+        return; 
+      }
+      if (Date.now() - start > timeoutMs) { 
+        clearInterval(timer); 
+        console.error('[BRIDGE] Timeout aguardando ponte Python');
+        reject(new Error('API indisponível')); 
+      }
     }, 100);
   });
 }
 
 async function getApiMethod(name) {
+  console.log(`[API] Obtendo método: ${name}`);
   const api = await waitForBridge();
-  if (typeof api[name] === 'function') return api[name].bind(api);
-  if (window.pywebview?.api && typeof window.pywebview.api[name] === 'function') return window.pywebview.api[name].bind(window.pywebview.api);
+  if (typeof api[name] === 'function') {
+    console.log(`[API] Método ${name} encontrado no pywebview.api`);
+    return api[name].bind(api);
+  }
+  if (window.pywebview?.api && typeof window.pywebview.api[name] === 'function') {
+    console.log(`[API] Método ${name} encontrado em window.pywebview.api`);
+    return window.pywebview.api[name].bind(window.pywebview.api);
+  }
   throw new Error(`Metodo ${name} nao encontrado.`);
 }
 
@@ -141,27 +158,43 @@ async function reloadEditor(markdown) {
 }
 
 async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const fileToOpen = params.get('file');
-
-  if (fileToOpen) {
-    try {
+  console.log('[INIT] Inicializando editor...');
+  
+  try {
+    console.log('[INIT] Tentando obter arquivo inicial do Python...');
+    const getInitialFile = await getApiMethod('get_initial_file');
+    console.log('[INIT] Método get_initial_file obtido');
+    const fileToOpen = await getInitialFile();
+    console.log('[INIT] Arquivo inicial retornado:', fileToOpen);
+    
+    if (fileToOpen && fileToOpen.trim().length > 0) {
+      console.log('[INIT] Tentando abrir arquivo:', fileToOpen);
       const openPath = await getApiMethod('open_path');
+      console.log('[INIT] Método open_path obtido');
       const result = await openPath(fileToOpen);
+      console.log('[INIT] Resultado de open_path:', result);
+      
       if (!result || result.error) {
-        throw new Error(result?.error || 'Erro ao abrir o arquivo.');
+        const errMsg = result?.error || 'Erro ao abrir o arquivo.';
+        console.error('[INIT] Erro retornado:', errMsg);
+        throw new Error(errMsg);
       }
+      
       currentPath = result.path;
       currentMarkdown = result.content;
       setFilePath(currentPath);
       await reloadEditor(currentMarkdown);
       markDirty(false);
       setStatus(`Arquivo aberto: ${currentPath}`);
-    } catch (e) {
-      setStatus(`Erro abrindo arquivo: ${e.message}`, true);
+      console.log('[INIT] Arquivo aberto com sucesso');
+    } else {
+      console.log('[INIT] Nenhum arquivo inicial, carregando editor vazio');
       await reloadEditor(currentMarkdown);
     }
-  } else {
+  } catch (e) {
+    console.error('[INIT] Exceção ao inicializar:', e.message);
+    console.error('[INIT] Stack:', e.stack);
+    setStatus(`Erro ao inicializar: ${e.message}`, true);
     await reloadEditor(currentMarkdown);
   }
 
